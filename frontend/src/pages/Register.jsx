@@ -21,7 +21,7 @@ export default function Register() {
     description: "",
     address: "",
     beneficiaries: "",
-    certificate: ""
+    certificate: "",
   });
 
   const changeHandler = (e) => {
@@ -37,25 +37,48 @@ export default function Register() {
     try {
       setLoading(true);
 
-      await API.post("/auth/register", form);
+      console.log("REGISTER DATA:", form);
+      console.log("API URL:", API.defaults.baseURL);
+
+      const response = await API.post("/auth/register", form);
+
+      console.log("REGISTER RESPONSE:", response.data);
 
       alert("Registration Successful");
 
       navigate("/login");
 
     } catch (err) {
+      console.error("REGISTRATION ERROR:", err);
 
-      alert(err.response?.data?.message || "Registration Failed");
+      if (err.response) {
+        console.error("STATUS:", err.response.status);
+        console.error("SERVER RESPONSE:", err.response.data);
+
+        alert(
+          `Registration failed: ${err.response.status}\n` +
+          `${err.response.data?.message || JSON.stringify(err.response.data)}`
+        );
+      } else if (err.request) {
+        console.error("NO RESPONSE FROM SERVER:", err.request);
+
+        alert(
+          "Registration failed: No response from server.\n" +
+          "Please check the backend URL and Render deployment."
+        );
+      } else {
+        console.error("REQUEST ERROR:", err.message);
+
+        alert(`Registration failed: ${err.message}`);
+      }
 
     } finally {
-
       setLoading(false);
-
     }
   };
 
   return (
-    <div className="min-h-screen bg-green-50 flex justify-center items-center py-10">
+    <div className="min-h-screen flex items-center justify-center bg-green-50 p-5">
 
       <form
         onSubmit={submitHandler}
@@ -68,6 +91,7 @@ export default function Register() {
 
         <div className="grid md:grid-cols-2 gap-5">
 
+          {/* NAME */}
           <input
             type="text"
             name="name"
@@ -78,6 +102,7 @@ export default function Register() {
             required
           />
 
+          {/* EMAIL */}
           <input
             type="email"
             name="email"
@@ -88,6 +113,7 @@ export default function Register() {
             required
           />
 
+          {/* PASSWORD */}
           <input
             type="password"
             name="password"
@@ -98,6 +124,7 @@ export default function Register() {
             required
           />
 
+          {/* PHONE */}
           <input
             type="text"
             name="phone"
@@ -107,6 +134,7 @@ export default function Register() {
             onChange={changeHandler}
           />
 
+          {/* LOCATION */}
           <input
             type="text"
             name="location"
@@ -116,48 +144,63 @@ export default function Register() {
             onChange={changeHandler}
           />
 
-          <div className="mt-6">
+        </div>
 
-  <label className="block mb-3 font-semibold text-gray-700">
-    Register As
-  </label>
+        {/* REGISTER AS */}
+        <div className="mt-6">
 
-  <div className="grid grid-cols-2 gap-4">
+          <h2 className="font-semibold text-gray-700 mb-3">
+            Register As
+          </h2>
 
-    <button
-      type="button"
-      onClick={() => setForm({ ...form, role: "donor" })}
-      className={`p-4 rounded-xl border-2 transition ${
-        form.role === "donor"
-          ? "bg-green-700 text-white border-green-700"
-          : "bg-white border-gray-300"
-      }`}
-    >
-      👤 Donor
-    </button>
+          <div className="grid grid-cols-2 gap-4">
 
-    <button
-      type="button"
-      onClick={() => setForm({ ...form, role: "trust" })}
-      className={`p-4 rounded-xl border-2 transition ${
-        form.role === "trust"
-          ? "bg-green-700 text-white border-green-700"
-          : "bg-white border-gray-300"
-      }`}
-    >
-      🏢 Trust
-    </button>
+            {/* DONOR */}
+            <button
+              type="button"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  role: "donor",
+                })
+              }
+              className={`p-4 rounded-xl border-2 transition ${
+                form.role === "donor"
+                  ? "bg-green-700 text-white border-green-700"
+                  : "bg-white border-gray-300"
+              }`}
+            >
+              👤 Donor
+            </button>
 
-  </div>
+            {/* TRUST */}
+            <button
+              type="button"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  role: "trust",
+                })
+              }
+              className={`p-4 rounded-xl border-2 transition ${
+                form.role === "trust"
+                  ? "bg-green-700 text-white border-green-700"
+                  : "bg-white border-gray-300"
+              }`}
+            >
+              🏢 Trust
+            </button>
 
-</div>
+          </div>
 
         </div>
 
+        {/* TRUST FIELDS */}
         {form.role === "trust" && (
 
           <div className="grid md:grid-cols-2 gap-5 mt-8">
 
+            {/* TRUST NAME */}
             <input
               type="text"
               name="trustName"
@@ -167,6 +210,7 @@ export default function Register() {
               onChange={changeHandler}
             />
 
+            {/* REGISTRATION NUMBER */}
             <input
               type="text"
               name="registrationNumber"
@@ -176,6 +220,7 @@ export default function Register() {
               onChange={changeHandler}
             />
 
+            {/* CATEGORY */}
             <input
               type="text"
               name="category"
@@ -185,6 +230,7 @@ export default function Register() {
               onChange={changeHandler}
             />
 
+            {/* BENEFICIARIES */}
             <input
               type="number"
               name="beneficiaries"
@@ -194,6 +240,7 @@ export default function Register() {
               onChange={changeHandler}
             />
 
+            {/* ADDRESS */}
             <input
               type="text"
               name="address"
@@ -203,6 +250,7 @@ export default function Register() {
               onChange={changeHandler}
             />
 
+            {/* DESCRIPTION */}
             <textarea
               name="description"
               placeholder="Description"
@@ -216,14 +264,18 @@ export default function Register() {
 
         )}
 
+        {/* REGISTER BUTTON */}
         <button
           type="submit"
-          className="w-full mt-8 bg-green-700 hover:bg-green-800 text-white py-4 rounded-xl text-lg font-semibold"
+          disabled={loading}
+          className="w-full mt-8 bg-green-700 hover:bg-green-800 disabled:bg-gray-400 text-white py-4 rounded-xl text-lg font-semibold"
         >
           {loading ? "Registering..." : "Register"}
         </button>
 
+        {/* LOGIN */}
         <p className="text-center mt-6">
+
           Already have an account?
 
           <Link
